@@ -1,8 +1,7 @@
 import model.resnet as resnet
-import model.IFSM as IFSM
 import model.FTM as FTM
 import model.FEM as FEM
-import model.SegHead as SegHead
+import model.Head as Head
 
 import torch
 from torch import nn
@@ -10,7 +9,7 @@ import torch.nn.functional as F
 
 
 class FGNetPlus(nn.Module):
-    def __init__(self, backbone, refine=False):
+    def __init__(self, backbone, refine=False, num_class=21):
         super(FGNetPlus, self).__init__()
         backbone = resnet.__dict__[backbone](pretrained=True)
         self.layer0 = nn.Sequential(backbone.conv1, backbone.bn1, backbone.relu, backbone.maxpool)
@@ -19,6 +18,7 @@ class FGNetPlus(nn.Module):
         self.mu = 0.7
         self.tau = 0.5
         self.beta1, self.beta2 = 0.5, 0.5
+        self.num_class = num_class
 
     def forward(self, img_s_list, mask_s_list, img_q, mask_q):
 
@@ -39,7 +39,7 @@ class FGNetPlus(nn.Module):
         q_0 = self.layer2(q_0)
         feature_q = self.layer3(q_0)
 
-        back_proto_list = IFSM(feature_s_list, img_s_list, mask_s_list)
+        back_proto_list = get_back_protos(feature_s_list, img_s_list, mask_s_list)
 
         proto_list = []
         supp_out_ls = []
@@ -61,16 +61,19 @@ class FGNetPlus(nn.Module):
         proto_f_exp = proto_f.expand(-1, -1, h, w)
         query_mask2 = F.cosine_similarity(feature_q, proto_f, dim=1)
 
-        agn_s, agn_q = FTM(feature_q)
+        ftm = FTM()
+        agn_s, agn_q = ftm(feature_q)
         query_mask2 = query_mask2.unsqueeze(1)
 
         feat_cat = torch.cat([feature_q, proto_f_exp, query_mask2, agn_q], dim=1)
-        feat_enh = FEM(feat_cat)
+        fem = FEM()
+        feat_enh = fem(feat_cat)
         query_mask3 = F.cosine_similarity(feat_enh, proto_f, dim=1)
         proto_e = self.masked_average_pooling(feat_enh, (query_mask3 > self.tau).float())
         pred_1 = F.cosine_similarity(feature_q, proto_e.unsqueeze(-1).unsqueeze(-1), dim=1)
         pred_1 = pred_1.unsqueeze(1)
-        pred_2 = SegHead(feat_enh)
+        seg_head = Head(feature_q.shape[1])
+        pred_2 = seg_head(feat_enh)
         pred = 0.5 * pred_1 + 0.5 * pred_2
 
         return pred, proto_e, proto_q, proto_s, proto_f, agn_s, agn_q, back_proto_list
