@@ -8,11 +8,11 @@ class Head(nn.Module):
         super(Head, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, 512, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(512, 1024, kernel_size=7, padding=1)
-        self.conv3 = nn.Conv2d(1024, 1024, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(1024, 512, kernel_size=3, padding=1)
         self.conv4 = nn.Conv2d(1024, num_classes, kernel_size=1)
-        self.bn1 = nn.BatchNorm2d(256)
-        self.bn2 = nn.BatchNorm2d(128)
-        self.bn3 = nn.BatchNorm2d(64)
+        self.bn1 = nn.BatchNorm2d(512)
+        self.bn2 = nn.BatchNorm2d(1024)
+        self.bn3 = nn.BatchNorm2d(512)
 
     def forward(self, x):
 
