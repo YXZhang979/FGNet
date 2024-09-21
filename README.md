@@ -1,11 +1,5 @@
 # FGNet
 
-We are extending our work to submit to a journal for comprehensive presentation, and the code will be available after acceptance by the journal.
+![QQ_1726917011700](https://github.com/user-attachments/assets/bb73cbb8-4ae1-411b-87c5-bceec4be4399)
 
-Currently, to reproduce our method, please refer to the following links upon which our model is partially based.
-
-PFENet: https://github.com/dvlab-research/PFENet
-
-SSP: https://github.com/fanq15/SSP
-
-IPRNet: http://fss-stat.s3-website-us-east-1.amazonaws.com/IPRNet.zip
+This paper is published on IJCAI'23, which aims to fill the inter-class and intra-class gaps for few-shot segmentation. Our code is highly based on SSP: https://github.com/fanq15/SSP. Thanks for their contribution to the community.
