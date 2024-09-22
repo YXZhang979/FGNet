@@ -66,7 +66,7 @@ class FGNetPlus(nn.Module):
         query_mask2 = query_mask2.unsqueeze(1)
 
         feat_cat = torch.cat([feature_q, proto_f_exp, query_mask2, agn_q], dim=1)
-        fem = FEM()
+        fem = FEM(in_channel=feat_cat.shape[1])
         feat_enh = fem(feat_cat)
         query_mask3 = F.cosine_similarity(feat_enh, proto_f, dim=1)
         proto_e = self.masked_average_pooling(feat_enh, (query_mask3 > self.tau).float())
